@@ -3,21 +3,20 @@ package main
 import (
 	"context"
 	"fmt"
-	"sync"
+	"time"
 
 	"github.com/chromedp/chromedp"
 )
 
 // Парс Плеерока, все лоты с главной(еще не закончил)
-func ParsePlayerok(ctx context.Context, wg *sync.WaitGroup) {
+func ParsePlayerok(ctx context.Context, ch chan []PlayerokLot) {
 
 	var lots []PlayerokLot
-
-	defer wg.Done()
 
 	err := chromedp.Run(ctx,
 		chromedp.Navigate("https://playerok.com/"),
 		chromedp.WaitVisible("div[data-id]"),
+		chromedp.Sleep(5*time.Second),
 		chromedp.Evaluate(`
     const lots = document.querySelectorAll("div[data-id]");
     const result = [];
@@ -44,10 +43,5 @@ func ParsePlayerok(ctx context.Context, wg *sync.WaitGroup) {
 		fmt.Println(err)
 	}
 
-	for _, lot := range lots {
-		fmt.Println("========== ЛОТ ==========")
-		fmt.Println("Название:", lot.Name)
-		fmt.Println("Цена:", lot.Price)
-		fmt.Println("Маркетплейс:", lot.Marketplace)
-	}
+	ch <- lots
 }

@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"sync"
+	"fmt"
 
 	"github.com/chromedp/chromedp"
 )
@@ -35,11 +35,22 @@ func main() {
 	playerokCtx, playerokCancel := chromedp.NewContext(allocCtx)
 	defer playerokCancel()
 
-	var wg sync.WaitGroup
+	var funpayLots []Lot
+	var playerokLots []PlayerokLot
 
-	wg.Add(2)
-	go ParsePlayerok(playerokCtx, &wg)
-	go ParseFunpay(funpayCtx, &wg)
-	wg.Wait()
+	funpChan := make(chan []Lot)
+	playerokChan := make(chan []PlayerokLot)
 
+	go ParsePlayerok(playerokCtx, playerokChan)
+	go ParseFunpay(funpayCtx, funpChan)
+
+	for i := 0; i < 2; i++ {
+		select {
+		case funpayLots = <-funpChan:
+			fmt.Println(funpayLots, "Парс фанпея прошел")
+		case playerokLots = <-playerokChan:
+			fmt.Println(playerokLots, "Парс плеерка прошел")
+		}
+		fmt.Printf("%d/2", i+1)
+	}
 }

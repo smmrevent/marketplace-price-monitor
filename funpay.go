@@ -3,16 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"sync"
 
 	"github.com/chromedp/chromedp"
 )
 
 // Парс фанпея, все лоты с конкретной страницы
-func ParseFunpay(ctx context.Context, wg *sync.WaitGroup) {
+func ParseFunpay(ctx context.Context, ch chan []Lot) {
 	var lots []Lot
-
-	defer wg.Done()
 
 	err := chromedp.Run(ctx,
 		chromedp.Navigate("https://funpay.com/lots/4432/"),
@@ -43,13 +40,6 @@ func ParseFunpay(ctx context.Context, wg *sync.WaitGroup) {
 	if err != nil {
 		fmt.Println(err)
 	}
-	for _, lot := range lots {
-		fmt.Println("========== ЛОТ ==========")
-		fmt.Println("Название:", lot.Service)
-		fmt.Println("Продавец:", lot.Seller)
-		fmt.Println("Количество:", lot.Amount)
-		fmt.Println("Тип:", lot.Type)
-		fmt.Println("Цена:", lot.Price)
-		fmt.Println("Маркетплейс:", lot.Marketplace)
-	}
+
+	ch <- lots
 }
