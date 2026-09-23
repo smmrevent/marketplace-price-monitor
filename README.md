@@ -1,4 +1,4 @@
-# Arbitrage Bot
+# Marketplace Price Monitor
 
 A Go-based bot for monitoring marketplaces and finding arbitrage opportunities between equivalent offers.
 
